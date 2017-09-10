@@ -57,7 +57,18 @@
 				FontFamily="Consolas"
 				FontSize="10pt"
 				SyntaxHighlighting="C#"
-			>Welcome to AvalonEdit!
+			>
+            <avalonEdit:TextEditor.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Open in Explorer" Click="OpenInExplorer_Click" />
+                    <MenuItem Header="Details" />
+                    <MenuItem Header="Menu item 2" />
+                    <Separator />
+                    <MenuItem Header="Save" Click="Save_Click" />
+                </ContextMenu>
+            </avalonEdit:TextEditor.ContextMenu>
+
+            Welcome to AvalonEdit!
         </avalonEdit:TextEditor>
 
     </Grid>

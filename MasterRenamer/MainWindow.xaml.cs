@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ICSharpCode.AvalonEdit;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,33 +13,40 @@ namespace MasterRenamer
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        int CurrentLine { get { return _editor.Document.GetLineByOffset(_editor.CaretOffset).LineNumber - 1; } }
+        string SelectedFile { get{ return fileNames[CurrentLine]; } }
+
         public MainWindow()
         {
             InitializeComponent();
-
-
             _editor.Text = "select folder";
-
+            _editor.TextArea.TextEntering += TextArea_TextEntering;
             _editor.MouseRightButtonDown += _editor_MouseRightButtonDown;
-            _editor.MouseRightButtonUp += _editor_MouseRightButtonUp;
-
-           // _editor.
-                
-        }
-
-        private void _editor_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
         }
 
         private void _editor_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
+            var position = _editor.GetPositionFromPoint(e.GetPosition(_editor));
+            if (position.HasValue)
+            {
+                _editor.TextArea.Caret.Position = position.Value;
+            }
+        }
+
+
+        private void TextArea_TextEntering(object sender, TextCompositionEventArgs e)
+        {
+            if (e.Text == "\n")
+                e.Handled = true;
         }
 
         string[] fileNames;
+        string path;
 
         private void foldersItem_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            var path = (e.NewValue as System.Windows.Controls.TreeViewItem)?.Tag as string;
+            path = (e.NewValue as System.Windows.Controls.TreeViewItem)?.Tag as string;
             fileNames = Directory.GetFiles(path);
 
             var toBeShown = string.Join("\n", fileNames);
@@ -87,28 +96,41 @@ namespace MasterRenamer
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            MessageBoxResult result1 = MessageBox.Show("Do you want to save changes?",
-             "Important Question", MessageBoxButton.YesNo);
-
-            if (result1 == MessageBoxResult.Yes)
-            {
-                Save();
-            }
+            Save();
         }
+
+        
+
 
         private void Save()
         {
-            var newFileNames = _editor.Text.Split('\n');
-            if (newFileNames.Length != fileNames.Length)
-                throw new Exception("different count of lines");
+            MessageBoxResult result1 = MessageBox.Show("Do you want to save changes?",
+                "Save changes", MessageBoxButton.YesNo);
 
-            for (int i = 0; i < fileNames.Length; i++)
+            if (result1 == MessageBoxResult.Yes)
             {
-                if(fileNames[i] != newFileNames[i])
-                    File.Move(fileNames[i], newFileNames[i]);
+                var newFileNames = _editor.Text.Split('\n');
+                if (newFileNames.Length != fileNames.Length)
+                    throw new Exception("different count of lines");
+
+                for (int i = 0; i < fileNames.Length; i++)
+                {
+                    if(fileNames[i] != newFileNames[i])
+                        File.Move(fileNames[i], newFileNames[i]);
+                }
+
             }
 
-            
+        }
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            Save();
+        }
+
+        private void OpenInExplorer_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", $"/select, \"{SelectedFile}\"");
         }
     }
-    }
+}

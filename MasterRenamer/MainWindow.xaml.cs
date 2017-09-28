@@ -1,6 +1,4 @@
-﻿using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Rendering;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices;
@@ -9,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Linq;
-using System.Management;
 
 namespace MasterRenamer
 {
@@ -69,6 +66,8 @@ namespace MasterRenamer
                 Toast.Show("Changes thrown away.", Toast.Type.Warn);
 
             CurrentPath = (e.NewValue as TreeViewItem)?.Tag as string;
+
+            this.Title = "Master Renamer - " + CurrentPath;
             if (CurrentPath == "\\\\")
             {
                 _editor.Text = "Expand network shared folders (SMB).";
@@ -288,6 +287,14 @@ namespace MasterRenamer
                 Save();
                 e.Handled = true;
             }
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            if(CurrentPath == null)
+                Clipboard.SetText(_editor.Text);
+            else
+                Clipboard.SetText(SelectedFile);
         }
     }
 }

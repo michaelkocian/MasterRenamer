@@ -19,7 +19,7 @@ namespace MasterRenamer
         string GetStringFromFileNames => string.Join("\n", FileNames);
         string CurrentPath { get; set; }
         int CurrentLine => _editor.Document.GetLineByOffset(_editor.CaretOffset).LineNumber - 1;
-        string SelectedFile => FileNames[CurrentLine];
+        string SelectedFile => FileNames.Length == 0 ? "" : FileNames[CurrentLine];
         string[] NewFileNames => _editor.Text.Split(new string[] { "\n" }, options:StringSplitOptions.RemoveEmptyEntries);
         bool HasChangedNames => FileNames.Length == 0 ? false : !FileNames.SequenceEqual(NewFileNames);
         
@@ -103,6 +103,7 @@ namespace MasterRenamer
 
         void network_Expanded(object sender, RoutedEventArgs e)
         {
+            this.Cursor = Cursors.Wait;
             TreeViewItem item = (TreeViewItem)sender;
             e.Handled = true;
             item.Items.Clear();
@@ -125,10 +126,12 @@ namespace MasterRenamer
                     item.Items.Add(subitem);
                 }
             });
+            this.Cursor = Cursors.Arrow;
         }
 
         void networkServer_Expanded(object sender, RoutedEventArgs e)
         {
+            this.Cursor = Cursors.Wait;
             TreeViewItem item = (TreeViewItem)sender;
             e.Handled = true;
             item.Items.Clear();
@@ -146,6 +149,7 @@ namespace MasterRenamer
                     item.Items.Add(subitem);
                 }
             });
+            this.Cursor = Cursors.Arrow;
         }
 
         void folder_Expanded(object sender, RoutedEventArgs e)
@@ -247,7 +251,7 @@ namespace MasterRenamer
         {
             if (!HasChangedNames)
             {
-                Toast.Show("You haven't modifed the names.", Toast.Type.Msg);
+                Toast.Show("You haven't modifed any name.", Toast.Type.Msg);
                 return;
             }
 
@@ -273,10 +277,19 @@ namespace MasterRenamer
         {
             Utils.TryWithToast(() =>
             {
-                Utils.TryWithToast(() =>
+                string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+                double len = new FileInfo(SelectedFile).Length;
+                int order = 0;
+                while (len >= 1024 && order < sizes.Length - 1)
                 {
+                    order++;
+                    len = len / 1024;
+                }
 
-                });
+                // Adjust the format string to your preferences. For example "{0:0.#}{1}" would
+                // show a single decimal place, and no space.
+                string result = String.Format("{0:0.##} {1}", len, sizes[order]);
+                Toast.Show($"This files has {result}.", Toast.Type.Msg);
             });
         }
 
@@ -291,7 +304,7 @@ namespace MasterRenamer
 
         private void Copy_Click(object sender, RoutedEventArgs e)
         {
-            if(CurrentPath == null)
+            if(string.IsNullOrEmpty(SelectedFile))
                 Clipboard.SetText(_editor.Text);
             else
                 Clipboard.SetText(SelectedFile);

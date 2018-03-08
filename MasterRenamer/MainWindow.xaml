@@ -61,8 +61,8 @@
                 <ContextMenu>
                     <MenuItem Header="Open" Click="Open_Click" />
                     <MenuItem Header="Open in Explorer" Click="OpenInExplorer_Click" />
-                    <MenuItem Header="Copy"  Click="Copy_Click"/>
-                    <MenuItem Header="Details" Click="Details_Click" />
+                    <MenuItem Header="Copy line"  Click="Copy_Click"/>
+                    <MenuItem Header="Size" Click="Details_Click" />
                     <Separator />
                     <MenuItem Header="Save" Click="Save_Click" />
                 </ContextMenu>
